@@ -1,15 +1,16 @@
 extern crate sdl2;
 
-use nalgebra::{Rotation2, Vector2};
+use nalgebra::Rotation2;
 use player::{Player, MOVE_SPEED};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
+use sdl2::rect::Point;
 use std::collections::HashSet;
-use std::time::{Duration, Instant};
 
 mod map;
 mod player;
+mod ray_caster;
 mod tile;
 
 pub fn main() {
@@ -43,6 +44,7 @@ pub fn main() {
     let mut last_time = 0;
 
     'running: loop {
+        canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
 
         for event in event_pump.poll_iter() {
@@ -101,7 +103,13 @@ pub fn main() {
         let rotation = Rotation2::new(mouse_state.x() as f64 * 0.001);
         player.direction = rotation * player.direction;
 
-        println!("{}", player.direction);
+        canvas.set_draw_color(Color::RED);
+        for x in 0_u32..1280 {
+            let ray = ray_caster::calculate_ray(&player, x, 1280, 720);
+            let start = Point::new(x as i32, ray.0);
+            let end = Point::new(x as i32, ray.1);
+            canvas.draw_line(start, end).expect("Failed to draw ray!");
+        }
 
         canvas.present();
     }
