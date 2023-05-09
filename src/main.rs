@@ -5,6 +5,9 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use std::time::Duration;
 
+mod map;
+mod tile;
+
 pub fn main() {
     // Create SDL context for video
     let sdl_context = sdl2::init().unwrap();
