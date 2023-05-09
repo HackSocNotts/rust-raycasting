@@ -2,11 +2,13 @@ extern crate sdl2;
 
 use nalgebra::Rotation2;
 use player::{Player, MOVE_SPEED};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use std::collections::HashSet;
+use std::time::Instant;
 
 mod map;
 mod player;
@@ -43,6 +45,8 @@ pub fn main() {
 
     let mut last_time = 0;
 
+    let mut ticks_since_fps = 0;
+
     'running: loop {
         canvas.set_draw_color(Color::RGB(0, 0, 0));
         canvas.clear();
@@ -63,9 +67,9 @@ pub fn main() {
         // do this for physics)
         let current_time = timer_subsystem.performance_counter();
         let delta_time = current_time - last_time;
-        last_time = current_time;
+        ticks_since_fps += delta_time;
 
-        // println!("{delta_time}");
+        last_time = current_time;
 
         // Create a set of pressed Keys.
         let keys: HashSet<_> = event_pump
@@ -104,11 +108,33 @@ pub fn main() {
         player.direction = rotation * player.direction;
 
         canvas.set_draw_color(Color::RED);
-        for x in 0_u32..1280 {
-            let ray = ray_caster::calculate_ray(&player, x, 1280, 720);
-            let start = Point::new(x as i32, ray.0);
-            let end = Point::new(x as i32, ray.1);
-            canvas.draw_line(start, end).expect("Failed to draw ray!");
+
+        let start_raycast = Instant::now();
+
+        // for x in 0_u32..1280 {
+        //     let ray = ray_caster::calculate_ray(&player, x, 1280, 720);
+        //     let start = Point::new(x as i32, ray.0);
+        //     let end = Point::new(x as i32, ray.1);
+        //     canvas.draw_line(start, end).expect("Failed to draw ray!");
+        // }
+
+        (0_i32..1280)
+            .into_iter()
+            .map(|x| {
+                let ray_distance = ray_caster::calculate_ray(&player, x as u32, 1280, 720);
+                (Point::new(x, ray_distance.0), Point::new(x, ray_distance.1))
+            })
+            // .collect::<Vec<_>>()
+            // .iter()
+            .for_each(|points| {
+                canvas
+                    .draw_line(points.0, points.1)
+                    .expect("Failed to draw ray!")
+            });
+
+        if ticks_since_fps > 10000000 {
+            println!("{}us", start_raycast.elapsed().as_micros());
+            ticks_since_fps = 0;
         }
 
         canvas.present();

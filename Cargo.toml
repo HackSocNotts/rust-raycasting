@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 nalgebra = "0.32.2"
+rayon = "1.7.0"
 sdl2 = "0.35.2"
