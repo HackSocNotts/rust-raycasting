@@ -29,7 +29,7 @@ pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: 
     let ray_dir = player.direction + player.plane() * camera_x;
 
     // This vector says which square the ray is in.
-    let mut ray_map = Vector2::new(player.position.x as i64, player.position.y as i64);
+    let mut ray_map = Vector2::new(player.position.x as i32, player.position.y as i32);
 
     // This vector stores the initial distance that the ray has to travel to hit
     // a wall
@@ -92,16 +92,16 @@ pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: 
     // done by calculating the distance to the camera plane in order to avoid
     // fisheye.
 
-    match hit_side {
-        HitSide::Horizontal => perp_wall_dist = side_dist.x - delta_dist.x,
-        HitSide::Vertical => perp_wall_dist = side_dist.y - delta_dist.y,
-    }
+    perp_wall_dist = match hit_side {
+        HitSide::Horizontal => side_dist.x - delta_dist.x,
+        HitSide::Vertical => side_dist.y - delta_dist.y,
+    };
 
     // Calculate the height of the line to draw
     let line_height: i32 = if perp_wall_dist as i32 == 0 {
         0
     } else {
-        window_height as i32 / perp_wall_dist as i32
+        (window_height as f64 / perp_wall_dist) as i32
     };
 
     // Calculate the start and end positions of the line. There's probably a
