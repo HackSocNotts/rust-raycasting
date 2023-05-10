@@ -43,7 +43,7 @@ pub fn main() {
 
     let mut player = Player::new();
 
-    let mut last_time = 0;
+    let mut last_time = Instant::now();
 
     let mut ticks_since_fps = 0;
 
@@ -65,8 +65,8 @@ pub fn main() {
         // Calculate delta time (time since last loop). Needed to handle
         // movement without framerate messing it up (some Bethesda games don't
         // do this for physics)
-        let current_time = timer_subsystem.performance_counter();
-        let delta_time = current_time - last_time;
+        let current_time = Instant::now();
+        let delta_time = (current_time - last_time).as_nanos();
         ticks_since_fps += delta_time;
 
         last_time = current_time;
