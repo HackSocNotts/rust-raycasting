@@ -1,5 +1,7 @@
 # Rust Raycasting Tutorial
 
+![Video demonstration](hacksoc-raycasting.mp4)
+
 This project contains a basic raycaster written in Rust using SDL2. The method used is based off [this tutorial](https://lodev.org/cgtutor/raycasting.html) (which you can follow to further expand the raycaster). I've tried my best to add detailed comments that are easier to follow than the original tutorial, these can be seen in `src/ray_caster.rs`.
 
 # Setup
