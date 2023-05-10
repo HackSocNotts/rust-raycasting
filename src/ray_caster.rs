@@ -116,12 +116,17 @@ pub fn draw_ray(player: &Player, x: u32, canvas: &mut Canvas<Window>) {
 
     // Calculate the start and end positions of the line. There's probably a
     // cleaner way of doing this
-    let draw_start = max(0, -line_height / 2 + window_height as i32 / 2);
-    // let draw_end = max(
-    //     (window_height - 1) as i32,
-    //     line_height / 2 + window_height / 2,
-    // );
-    let draw_end = max(0, line_height / 2 + window_height as i32 / 2);
+    let draw_start = if line_height == 0 {
+        0
+    } else {
+        max(0, -line_height / 2 + window_height as i32 / 2)
+    };
+
+    let draw_end = if line_height == 0 {
+        window_height as i32
+    } else {
+        max(0, line_height / 2 + window_height as i32 / 2)
+    };
 
     if let Tile::Wall(colour) = hit_tile {
         canvas.set_draw_color(colour);
