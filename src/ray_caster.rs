@@ -1,6 +1,9 @@
 use std::cmp::{max, min};
 
 use nalgebra::Vector2;
+use sdl2::rect::Point;
+use sdl2::render::Canvas;
+use sdl2::video::Window;
 
 use crate::map::MAP;
 use crate::player::Player;
@@ -18,7 +21,10 @@ enum HitSide {
 
 /// Calculates the start and stop position for the ray line for the given x.
 /// Player is a read-only borrow, as it is not modified in this function.
-pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: i32) -> (i32, i32) {
+pub fn draw_ray(player: &Player, x: u32, canvas: &mut Canvas<Window>) {
+    // Get the width and height from SDL
+    let (window_width, window_height) = canvas.window().size();
+
     // camera_x is the x coordinate on the camera plane. The left of the screen
     // gets -1, right gets 1. This is used to calculate the direction of the
     // ray (as the ray is passed from the player through a point in the camera
@@ -49,7 +55,9 @@ pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: 
 
     // The hit side of the wall. We could technically define this as an Option,
     // but it doesn't really matter what the intial value is.
-    let mut hit_side = HitSide::Horizontal;
+    let mut hit_side: HitSide;
+
+    let mut hit_tile: Tile;
 
     // Here, we calculate our step and initial distance using the ray direction.
 
@@ -83,7 +91,9 @@ pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: 
             hit_side = HitSide::Vertical;
         }
 
-        if MAP[ray_map.x as usize][ray_map.y as usize] == Tile::Wall {
+        // If we hit a wall, store the hit tile and break out of this loop
+        if let Tile::Wall(_) = MAP[ray_map.x as usize][ray_map.y as usize] {
+            hit_tile = MAP[ray_map.x as usize][ray_map.y as usize];
             break;
         }
     }
@@ -111,7 +121,12 @@ pub fn calculate_ray(player: &Player, x: u32, window_width: i32, window_height: 
     //     (window_height - 1) as i32,
     //     line_height / 2 + window_height / 2,
     // );
-    let draw_end = max(0, line_height / 2 + window_height / 2);
+    let draw_end = max(0, line_height / 2 + window_height as i32 / 2);
 
-    (draw_start, draw_end)
+    if let Tile::Wall(colour) = hit_tile {
+        canvas.set_draw_color(colour);
+        let start = Point::new(x as i32, draw_start);
+        let end = Point::new(x as i32, draw_end);
+        canvas.draw_line(start, end).expect("Failed to draw ray!");
+    }
 }

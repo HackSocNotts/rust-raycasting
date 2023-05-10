@@ -111,26 +111,9 @@ pub fn main() {
 
         let start_raycast = Instant::now();
 
-        // for x in 0_u32..1280 {
-        //     let ray = ray_caster::calculate_ray(&player, x, 1280, 720);
-        //     let start = Point::new(x as i32, ray.0);
-        //     let end = Point::new(x as i32, ray.1);
-        //     canvas.draw_line(start, end).expect("Failed to draw ray!");
-        // }
-
-        (0_i32..1280)
-            .into_iter()
-            .map(|x| {
-                let ray_distance = ray_caster::calculate_ray(&player, x as u32, 1280, 720);
-                (Point::new(x, ray_distance.0), Point::new(x, ray_distance.1))
-            })
-            // .collect::<Vec<_>>()
-            // .iter()
-            .for_each(|points| {
-                canvas
-                    .draw_line(points.0, points.1)
-                    .expect("Failed to draw ray!")
-            });
+        for x in 0_u32..1280 {
+            ray_caster::draw_ray(&player, x, &mut canvas);
+        }
 
         if ticks_since_fps > 10000000 {
             println!("{}us", start_raycast.elapsed().as_micros());
