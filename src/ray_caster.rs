@@ -1,6 +1,7 @@
-use std::cmp::{max, min};
+use std::cmp::max;
 
 use nalgebra::Vector2;
+use sdl2::pixels::Color;
 use sdl2::rect::Point;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
@@ -48,7 +49,7 @@ pub fn draw_ray(player: &Player, x: u32, canvas: &mut Canvas<Window>) {
     let delta_dist = Vector2::new((1.0 / ray_dir.x).abs(), (1.0 / ray_dir.y).abs());
 
     // The distance that the ray has travelled
-    let mut perp_wall_dist = 0.0;
+    let perp_wall_dist;
 
     // Which direction to step in. The DDA will always jump exactly one square.
     let mut step = Vector2::new(0, 0);
@@ -57,7 +58,7 @@ pub fn draw_ray(player: &Player, x: u32, canvas: &mut Canvas<Window>) {
     // but it doesn't really matter what the intial value is.
     let mut hit_side: HitSide;
 
-    let mut hit_tile: Tile;
+    let hit_tile: Tile;
 
     // Here, we calculate our step and initial distance using the ray direction.
 
@@ -129,7 +130,14 @@ pub fn draw_ray(player: &Player, x: u32, canvas: &mut Canvas<Window>) {
     };
 
     if let Tile::Wall(colour) = hit_tile {
-        canvas.set_draw_color(colour);
+        // If the hit side is vertical, half the colour to give some shading
+        match hit_side {
+            HitSide::Horizontal => canvas.set_draw_color(colour),
+            HitSide::Vertical => {
+                canvas.set_draw_color(Color::RGB(colour.r / 2, colour.g / 2, colour.b / 2))
+            }
+        }
+
         let start = Point::new(x as i32, draw_start);
         let end = Point::new(x as i32, draw_end);
         canvas.draw_line(start, end).expect("Failed to draw ray!");

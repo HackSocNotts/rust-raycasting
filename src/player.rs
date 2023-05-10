@@ -1,7 +1,7 @@
 use nalgebra::Vector2;
 
 /// The move speed of the player, to be compensated with a delta time.
-pub const MOVE_SPEED: f64 = 0.00000001;
+pub const MOVE_SPEED: f64 = 0.000000005;
 
 /// The Player struct stores our player's position, direction, and plane
 pub struct Player {

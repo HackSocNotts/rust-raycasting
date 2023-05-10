@@ -1,14 +1,14 @@
 extern crate sdl2;
 
+use map::MAP;
 use nalgebra::Rotation2;
 use player::{Player, MOVE_SPEED};
-use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use sdl2::rect::Point;
 use std::collections::HashSet;
 use std::time::Instant;
+use tile::Tile;
 
 mod map;
 mod player;
@@ -19,7 +19,6 @@ pub fn main() {
     // Create SDL context for video
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
-    let timer_subsystem = sdl_context.timer().unwrap();
 
     // Create a window
     // position_centered - puts the window in the middle of the screen
@@ -85,21 +84,27 @@ pub fn main() {
         // Calculate the movement speed.
         let move_speed = MOVE_SPEED * delta_time as f64;
 
+        let mut new_position = player.position;
+
         // Handle movement with keyboard
         for key in keys {
             match key {
-                Keycode::W => player.position += player.direction * move_speed,
+                Keycode::W => new_position += player.direction * move_speed,
                 Keycode::A => {
-                    player.position.x += player.direction.y * move_speed;
-                    player.position.y -= player.direction.x * move_speed;
+                    new_position.x += player.direction.y * move_speed;
+                    new_position.y -= player.direction.x * move_speed;
                 }
-                Keycode::S => player.position -= player.direction * move_speed,
+                Keycode::S => new_position -= player.direction * move_speed,
                 Keycode::D => {
-                    player.position.x -= player.direction.y * move_speed;
-                    player.position.y += player.direction.x * move_speed;
+                    new_position.x -= player.direction.y * move_speed;
+                    new_position.y += player.direction.x * move_speed;
                 }
                 _ => {}
             }
+        }
+
+        if MAP[new_position.x as usize][new_position.y as usize] == Tile::Floor {
+            player.position = new_position;
         }
 
         // Rotate the player's direction using the mouse's (relative) X
